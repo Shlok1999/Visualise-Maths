@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualiser By Shlok</title>
+    <!-- Modern Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <header class="mobile-header">
+        <a href="index.html" class="mobile-logo">
+            <i data-lucide="bar-chart-3"></i>
+            <span>Data Visualiser</span>
+        </a>
+        <button class="hamburger" onclick="toggleMobileSidebar()">
+            <i data-lucide="menu"></i>
+        </button>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <i data-lucide="bar-chart-3"></i>
+                <span class="sidebar-text">Data Visualiser</span>
+            </a>
+            <button class="toggle-btn" id="toggle-btn" onclick="toggleSidebar()">
+                <i data-lucide="chevron-left" id="toggle-icon"></i>
+            </button>
+        </div>
+
+        <div class="nav-container">
+            <div class="nav-section">
+                <h3 class="section-title">Mathematics</h3>
+                <a href="index.html" class="nav-link active">
+                    <i data-lucide="home"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Probability</h3>
+                <a href="PermutationCombination/HeadOrTail.html" class="nav-link">
+                    <i data-lucide="coins"></i>
+                    <span class="sidebar-text">Coin Toss</span>
+                </a>
+                <a href="PermutationCombination/MultiCoin.html" class="nav-link">
+                    <i data-lucide="layers"></i>
+                    <span class="sidebar-text">Multi-Coin Space</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Set Theory</h3>
+                <a href="Set Theory/2ElementVenn.html" class="nav-link">
+                    <i data-lucide="circle-dot"></i>
+                    <span class="sidebar-text">2-Element Venn</span>
+                </a>
+                <a href="Set Theory/3ElementVenn.html" class="nav-link">
+                    <i data-lucide="layout-grid"></i>
+                    <span class="sidebar-text">3-Element Venn</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="hero">
+            <h1>Data Visualiser <br>By Shlok</h1>
+            <p class="subtitle">
+                An interactive suite of mathematical visualisations designed to simplify complex concepts through data
+                and simulation.
+            </p>
+        </section>
+
+        <section class="tool-grid">
+            <!-- Coin Toss Card -->
+            <a href="PermutationCombination/HeadOrTail.html" class="tool-card">
+                <div class="card-icon"><i data-lucide="coins"></i></div>
+                <h2 class="card-title">Coin Toss Simulator</h2>
+                <p class="card-desc">Simulate multiple coin tosses to understand probability distributions and the law
+                    of large numbers.</p>
+            </a>
+
+            <!-- 2-Element Venn Card -->
+            <a href="Set Theory/2ElementVenn.html" class="tool-card">
+                <div class="card-icon"><i data-lucide="circle-dot"></i></div>
+                <h2 class="card-title">2-Element Venn Diagram</h2>
+                <p class="card-desc">Visualize the relationships, intersections, and unions between two distinct sets of
+                    data.</p>
+            </a>
+
+            <!-- 3-Element Venn Card -->
+            <a href="Set Theory/3ElementVenn.html" class="tool-card">
+                <div class="card-icon"><i data-lucide="layout-grid"></i></div>
+                <h2 class="card-title">3-Element Venn Diagram</h2>
+                <p class="card-desc">Explore complex set interactions with three overlapping circles and detailed region
+                    calculations.</p>
+            </a>
+
+            <!-- Multi-Coin Card -->
+            <a href="PermutationCombination/MultiCoin.html" class="tool-card">
+                <div class="card-icon"><i data-lucide="layers"></i></div>
+                <h2 class="card-title">Multi-Coin Probability Space</h2>
+                <p class="card-desc">Visualize all possible outcomes for multiple coin tosses and explore the binomial
+                    distribution.</p>
+            </a>
+        </section>
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+
+            if (sidebar.classList.contains('collapsed')) {
+                icon.setAttribute('data-lucide', 'chevron-right');
+            } else {
+                icon.setAttribute('data-lucide', 'chevron-left');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+    </script>
+
+</body>
+
+</html>

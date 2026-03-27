@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-Element Venn Diagram Solver</title>
+    <!-- Modern Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --circle-a: rgba(239, 68, 68, 0.4);
+            --circle-b: rgba(59, 130, 246, 0.4);
+            --circle-c: rgba(16, 185, 129, 0.4);
+            --circle-a-border: #ef4444;
+            --circle-b-border: #3b82f6;
+            --circle-c-border: #10b981;
+        }
+
+        /* Tool specific layout overrides */
+        .venn-container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--card-bg);
+            border-radius: 28px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .venn-main {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2.5rem;
+        }
+
+        @media (max-width: 850px) {
+            .venn-main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar Controls */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.75rem;
+            background: #f8fafc;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        input {
+            padding: 0.65rem 0.9rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .action-btn {
+            margin-top: 1rem;
+            padding: 0.9rem;
+            border-radius: 14px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: none;
+            font-weight: 500;
+        }
+
+        /* Diagram Visualization */
+        .visualizer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .universe {
+            width: 550px;
+            height: 500px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .universe-label {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .diagram-circles {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        .circle {
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            mix-blend-mode: multiply;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .circle.a {
+            background-color: var(--circle-a);
+            border: 3px solid var(--circle-a-border);
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .circle.b {
+            background-color: var(--circle-b);
+            border: 3px solid var(--circle-b-border);
+            bottom: 20px;
+            left: 20px;
+        }
+
+        .circle.c {
+            background-color: var(--circle-c);
+            border: 3px solid var(--circle-c-border);
+            bottom: 20px;
+            right: 20px;
+        }
+
+        /* Value Positioning Labels */
+        .val-label {
+            position: absolute;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .val-label .title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 2px;
+            opacity: 0.75;
+        }
+
+        .val-label .value {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Positions for the 7 regions + 1 outside */
+        #pos-a {
+            top: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #pos-b {
+            bottom: 85px;
+            left: 80px;
+        }
+
+        #pos-c {
+            bottom: 85px;
+            right: 80px;
+        }
+
+        #pos-ab {
+            top: 180px;
+            left: 80px;
+        }
+
+        #pos-ac {
+            top: 180px;
+            right: 80px;
+        }
+
+        #pos-bc {
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #pos-abc {
+            top: 205px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .outside-box {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            text-align: right;
+        }
+
+        .outside-box .title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .outside-box .value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        @media (max-width: 600px) {
+            .universe {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1/1;
+            }
+
+            .diagram-circles {
+                width: 100%;
+                height: 100%;
+                transform: scale(0.65);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <header class="mobile-header">
+        <a href="../index.html" class="mobile-logo">
+            <i data-lucide="bar-chart-3"></i>
+            <span>Data Visualiser</span>
+        </a>
+        <button class="hamburger" onclick="toggleMobileSidebar()">
+            <i data-lucide="menu"></i>
+        </button>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="logo">
+                <i data-lucide="bar-chart-3"></i>
+                <span class="sidebar-text">Data Visualiser</span>
+            </a>
+            <button class="toggle-btn" id="toggle-btn" onclick="toggleSidebar()">
+                <i data-lucide="chevron-left" id="toggle-icon"></i>
+            </button>
+        </div>
+
+        <div class="nav-container">
+            <div class="nav-section">
+                <h3 class="section-title">Mathematics</h3>
+                <a href="../index.html" class="nav-link">
+                    <i data-lucide="home"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Probability</h3>
+                <a href="../PermutationCombination/HeadOrTail.html" class="nav-link">
+                    <i data-lucide="coins"></i>
+                    <span class="sidebar-text">Coin Toss</span>
+                </a>
+                <a href="../PermutationCombination/MultiCoin.html" class="nav-link">
+                    <i data-lucide="layers"></i>
+                    <span class="sidebar-text">Multi-Coin Space</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Set Theory</h3>
+                <a href="2ElementVenn.html" class="nav-link">
+                    <i data-lucide="circle-dot"></i>
+                    <span class="sidebar-text">2-Element Venn</span>
+                </a>
+                <a href="3ElementVenn.html" class="nav-link active">
+                    <i data-lucide="layout-grid"></i>
+                    <span class="sidebar-text">3-Element Venn</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="venn-container">
+            <header style="text-align: center;">
+                <h1 style="font-size: 2rem;">Venn Diagram Solver</h1>
+                <p class="subtitle">Complete intersections between three sets</p>
+            </header>
+
+            <div class="venn-main">
+                <div class="controls">
+                    <div class="input-group">
+                        <label for="totalNumber">Universe Total (U)</label>
+                        <input type="number" id="totalNumber" value="100">
+                    </div>
+                    <div class="input-group">
+                        <label for="A">Set A</label>
+                        <input type="number" id="A" value="40">
+                    </div>
+                    <div class="input-group">
+                        <label for="B">Set B</label>
+                        <input type="number" id="B" value="40">
+                    </div>
+                    <div class="input-group">
+                        <label for="C">Set C</label>
+                        <input type="number" id="C" value="40">
+                    </div>
+                    <div class="input-group" style="padding-top: 10px; border-top: 1px solid var(--border-color);">
+                        <label for="AandB">A ∩ B (Full)</label>
+                        <input type="number" id="AandB" value="15">
+                    </div>
+                    <div class="input-group">
+                        <label for="AandC">A ∩ C (Full)</label>
+                        <input type="number" id="AandC" value="15">
+                    </div>
+                    <div class="input-group">
+                        <label for="BandC">B ∩ C (Full)</label>
+                        <input type="number" id="BandC" value="15">
+                    </div>
+                    <div class="input-group">
+                        <label for="AandBandC">A ∩ B ∩ C</label>
+                        <input type="number" id="AandBandC" value="5">
+                    </div>
+
+                    <div id="errorMessage" class="error-message"></div>
+                    <button class="action-btn" onclick="updateDiagram()">Visualize Now</button>
+                </div>
+
+                <div class="visualizer">
+                    <div class="universe">
+                        <span class="universe-label">Universe (U)</span>
+
+                        <div class="diagram-circles">
+                            <div class="circle a"></div>
+                            <div class="circle b"></div>
+                            <div class="circle c"></div>
+
+                            <!-- Labels for 7 regions -->
+                            <div class="val-label" id="pos-a">
+                                <div class="title">A only</div>
+                                <div class="value" id="val-a"></div>
+                            </div>
+                            <div class="val-label" id="pos-b">
+                                <div class="title">B only</div>
+                                <div class="value" id="val-b"></div>
+                            </div>
+                            <div class="val-label" id="pos-c">
+                                <div class="title">C only</div>
+                                <div class="value" id="val-c"></div>
+                            </div>
+
+                            <div class="val-label" id="pos-ab">
+                                <div class="title">A∩B only</div>
+                                <div class="value" id="val-ab"></div>
+                            </div>
+                            <div class="val-label" id="pos-ac">
+                                <div class="title">A∩C only</div>
+                                <div class="value" id="val-ac"></div>
+                            </div>
+                            <div class="val-label" id="pos-bc">
+                                <div class="title">B∩C only</div>
+                                <div class="value" id="val-bc"></div>
+                            </div>
+
+                            <div class="val-label" id="pos-abc">
+                                <div class="title">All 3</div>
+                                <div class="value" id="val-abc"></div>
+                            </div>
+                        </div>
+
+                        <div class="outside-box">
+                            <div class="title">Outside (U - A∪B∪C)</div>
+                            <div class="value" id="val-outside"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+
+            if (sidebar.classList.contains('collapsed')) {
+                icon.setAttribute('data-lucide', 'chevron-right');
+            } else {
+                icon.setAttribute('data-lucide', 'chevron-left');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        function updateDiagram() {
+            const getVal = (id) => Number(document.getElementById(id).value) || 0;
+
+            const total = getVal("totalNumber");
+            const a = getVal("A");
+            const b = getVal("B");
+            const c = getVal("C");
+
+            const ab = getVal("AandB");
+            const ac = getVal("AandC");
+            const bc = getVal("BandC");
+            const abc = getVal("AandBandC");
+
+            const errorEl = document.getElementById("errorMessage");
+            errorEl.style.display = "none";
+
+            if (abc > ab || abc > ac || abc > bc) {
+                errorEl.innerText = "A∩B∩C cannot exceed pairwise intersections";
+                errorEl.style.display = "block"; return;
+            }
+            if (ab > Math.min(a, b) || ac > Math.min(a, c) || bc > Math.min(b, c)) {
+                errorEl.innerText = "Pairwise intersections cannot exceed set totals";
+                errorEl.style.display = "block"; return;
+            }
+
+            const vABC = abc;
+            const vAB = ab - abc;
+            const vAC = ac - abc;
+            const vBC = bc - abc;
+
+            const vA = a - (vAB + vAC + vABC);
+            const vB = b - (vAB + vBC + vABC);
+            const vC = c - (vAC + vBC + vABC);
+
+            if (vA < 0 || vB < 0 || vC < 0 || vAB < 0 || vAC < 0 || vBC < 0) {
+                errorEl.innerText = "Intersections exceed set values; check logic";
+                errorEl.style.display = "block"; return;
+            }
+
+            const union = vA + vB + vC + vAB + vAC + vBC + vABC;
+            const outside = total - union;
+
+            if (union > total) {
+                errorEl.innerText = "Union exceeds the Universe total";
+                errorEl.style.display = "block"; return;
+            }
+
+            document.getElementById("val-a").innerText = vA;
+            document.getElementById("val-b").innerText = vB;
+            document.getElementById("val-c").innerText = vC;
+            document.getElementById("val-ab").innerText = vAB;
+            document.getElementById("val-ac").innerText = vAC;
+            document.getElementById("val-bc").innerText = vBC;
+            document.getElementById("val-abc").innerText = vABC;
+            document.getElementById("val-outside").innerText = outside;
+
+            const diagram = document.querySelector('.diagram-circles');
+            diagram.style.opacity = '0.7';
+            setTimeout(() => diagram.style.opacity = '1', 50);
+        }
+
+        window.onload = updateDiagram;
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+<header class="mobile-header">
+    <a href="/index.html" class="mobile-logo">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Data Visualiser</span>
+    </a>
+    <button class="hamburger" onclick="toggleMobileSidebar()">
+        <i data-lucide="menu"></i>
+    </button>
+</header>
+
+<nav class="sidebar" id="sidebar">
+    <!-- ✅ paste your entire sidebar code here -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <i data-lucide="bar-chart-3"></i>
+                <span class="sidebar-text">Data Visualiser</span>
+            </a>
+            <button class="toggle-btn" id="toggle-btn" onclick="toggleSidebar()">
+                <i data-lucide="chevron-left" id="toggle-icon"></i>
+            </button>
+        </div>
+
+        <div class="nav-container">
+            <div class="nav-section">
+                <h3 class="section-title">Mathematics</h3>
+                <a href="index.html" class="nav-link active">
+                    <i data-lucide="home"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Probability</h3>
+                <a href="PermutationCombination/HeadOrTail.html" class="nav-link">
+                    <i data-lucide="coins"></i>
+                    <span class="sidebar-text">Coin Toss</span>
+                </a>
+                <a href="PermutationCombination/MultiCoin.html" class="nav-link">
+                    <i data-lucide="layers"></i>
+                    <span class="sidebar-text">Multi-Coin Space</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Set Theory</h3>
+                <a href="Set Theory/2ElementVenn.html" class="nav-link">
+                    <i data-lucide="circle-dot"></i>
+                    <span class="sidebar-text">2-Element Venn</span>
+                </a>
+                <a href="Set Theory/3ElementVenn.html" class="nav-link">
+                    <i data-lucide="layout-grid"></i>
+                    <span class="sidebar-text">3-Element Venn</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+</nav>

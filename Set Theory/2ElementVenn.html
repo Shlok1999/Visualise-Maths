@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2-Element Venn Diagram Solver</title>
+    <!-- Importing a modern font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --circle-a: rgba(239, 68, 68, 0.4);
+            --circle-b: rgba(59, 130, 246, 0.4);
+            --circle-a-border: #ef4444;
+            --circle-b-border: #3b82f6;
+        }
+
+        /* Tool specific layout overrides */
+        .venn-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .venn-main {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 850px) {
+            .venn-main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Input Controls */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        input {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .action-btn {
+            margin-top: 1rem;
+            padding: 0.85rem;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Venn Diagram Visualization */
+        .visualizer {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .universe {
+            width: 500px;
+            height: 350px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .universe-label {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .outside-value {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .diagram-circles {
+            position: relative;
+            width: 400px;
+            height: 250px;
+        }
+
+        .circle {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease-out;
+            mix-blend-mode: multiply;
+        }
+
+        .circle.a {
+            background-color: var(--circle-a);
+            border: 3px solid var(--circle-a-border);
+            left: 0;
+        }
+
+        .circle.b {
+            background-color: var(--circle-b);
+            border: 3px solid var(--circle-b-border);
+            right: 0;
+        }
+
+        .label-text {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+            opacity: 0.8;
+        }
+
+        .value-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        /* Specific value positioning */
+        .a-only {
+            position: absolute;
+            left: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .b-only {
+            position: absolute;
+            right: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .intersection {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .universe {
+                width: 100%;
+                height: 300px;
+            }
+
+            .diagram-circles {
+                width: 100%;
+                transform: scale(0.7);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <header class="mobile-header">
+        <a href="../index.html" class="mobile-logo">
+            <i data-lucide="bar-chart-3"></i>
+            <span>Data Visualiser</span>
+        </a>
+        <button class="hamburger" onclick="toggleMobileSidebar()">
+            <i data-lucide="menu"></i>
+        </button>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="logo">
+                <i data-lucide="bar-chart-3"></i>
+                <span class="sidebar-text">Data Visualiser</span>
+            </a>
+            <button class="toggle-btn" id="toggle-btn" onclick="toggleSidebar()">
+                <i data-lucide="chevron-left" id="toggle-icon"></i>
+            </button>
+        </div>
+
+        <div class="nav-container">
+            <div class="nav-section">
+                <h3 class="section-title">Mathematics</h3>
+                <a href="../index.html" class="nav-link">
+                    <i data-lucide="home"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Probability</h3>
+                <a href="../PermutationCombination/HeadOrTail.html" class="nav-link">
+                    <i data-lucide="coins"></i>
+                    <span class="sidebar-text">Coin Toss</span>
+                </a>
+                <a href="../PermutationCombination/MultiCoin.html" class="nav-link">
+                    <i data-lucide="layers"></i>
+                    <span class="sidebar-text">Multi-Coin Space</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Set Theory</h3>
+                <a href="2ElementVenn.html" class="nav-link active">
+                    <i data-lucide="circle-dot"></i>
+                    <span class="sidebar-text">2-Element Venn</span>
+                </a>
+                <a href="3ElementVenn.html" class="nav-link">
+                    <i data-lucide="layout-grid"></i>
+                    <span class="sidebar-text">3-Element Venn</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="venn-container">
+            <header style="text-align: center;">
+                <h1 style="font-size: 2rem;">Venn Diagram Solver</h1>
+                <p class="subtitle">Visualize set relationships between two collections</p>
+            </header>
+
+            <div class="venn-main">
+                <div class="controls">
+                    <div class="input-group">
+                        <label for="totalNumber">Universe (Total)</label>
+                        <input type="number" id="totalNumber" value="100">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="A">Set A</label>
+                        <input type="number" id="A" value="40">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="B">Set B</label>
+                        <input type="number" id="B" value="50">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="AIntB">Intersection (A ∩ B)</label>
+                        <input type="number" id="AIntB" value="10">
+                    </div>
+
+                    <div id="errorMessage" class="error-message"></div>
+
+                    <button class="action-btn" onclick="updateDiagram()">Visualize Now</button>
+                </div>
+
+                <div class="visualizer">
+                    <div class="universe">
+                        <span class="universe-label">Universe (U)</span>
+
+                        <div class="diagram-circles">
+                            <div class="circle a"></div>
+                            <div class="circle b"></div>
+
+                            <div class="a-only">
+                                <div class="label-text">A only</div>
+                                <div id="aOnlyVal" class="value-text">30</div>
+                            </div>
+
+                            <div class="intersection">
+                                <div class="label-text">A ∩ B</div>
+                                <div id="intVal" class="value-text">10</div>
+                            </div>
+
+                            <div class="b-only">
+                                <div class="label-text">B only</div>
+                                <div id="bOnlyVal" class="value-text">40</div>
+                            </div>
+                        </div>
+
+                        <div class="outside-value">
+                            <div class="label-text" style="font-size: 0.7rem; color: var(--text-secondary);">Neither (U
+                                -
+                                A∪B)</div>
+                            <div id="neitherVal">20</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+
+            if (sidebar.classList.contains('collapsed')) {
+                icon.setAttribute('data-lucide', 'chevron-right');
+            } else {
+                icon.setAttribute('data-lucide', 'chevron-left');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        function updateDiagram() {
+            const total = Number(document.getElementById("totalNumber").value) || 0;
+            const a = Number(document.getElementById("A").value) || 0;
+            const b = Number(document.getElementById("B").value) || 0;
+            const intersection = Number(document.getElementById("AIntB").value) || 0;
+            const errorEl = document.getElementById("errorMessage");
+
+            errorEl.style.display = "none";
+
+            if (intersection > a || intersection > b) {
+                errorEl.innerText = "Intersection cannot be larger than Set A or Set B";
+                errorEl.style.display = "block";
+                return;
+            }
+
+            const union = a + b - intersection;
+            if (union > total) {
+                errorEl.innerText = "The Union (A ∪ B) exceeds the Universe total";
+                errorEl.style.display = "block";
+                return;
+            }
+
+            const aOnly = a - intersection;
+            const bOnly = b - intersection;
+            const neither = total - union;
+
+            document.getElementById("aOnlyVal").innerText = aOnly;
+            document.getElementById("bOnlyVal").innerText = bOnly;
+            document.getElementById("intVal").innerText = intersection;
+            document.getElementById("neitherVal").innerText = neither;
+
+            const circles = document.querySelectorAll('.circle');
+            circles.forEach(c => {
+                c.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    c.style.transform = 'scale(1)';
+                }, 200);
+            });
+        }
+
+        window.onload = updateDiagram;
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Coin Probability</title>
+    <!-- Modern Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --coin-head: #f59e0b;
+            --coin-tail: #4f46e5;
+        }
+
+        .tool-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .controls-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 600px) {
+            .controls-card {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        input {
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.85rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f8fafc;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+        }
+
+        /* Results Containers */
+        .results-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .results-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .list-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .list-title {
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .list-scroll {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding-right: 4px;
+        }
+
+        .outcome {
+            padding: 6px 10px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .h-char {
+            color: var(--coin-head);
+        }
+
+        .t-char {
+            color: var(--coin-tail);
+        }
+
+        .highlight {
+            background: #ecfdf5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        #probabilityResult {
+            background: #eef2ff;
+            color: #3730a3;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-align: center;
+            border: 1px solid #c7d2fe;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <header class="mobile-header">
+        <a href="../index.html" class="mobile-logo">
+            <i data-lucide="bar-chart-3"></i>
+            <span>Data Visualiser</span>
+        </a>
+        <button class="hamburger" onclick="toggleMobileSidebar()">
+            <i data-lucide="menu"></i>
+        </button>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="logo">
+                <i data-lucide="bar-chart-3"></i>
+                <span class="sidebar-text">Data Visualiser</span>
+            </a>
+            <button class="toggle-btn" id="toggle-btn" onclick="toggleSidebar()">
+                <i data-lucide="chevron-left" id="toggle-icon"></i>
+            </button>
+        </div>
+
+        <div class="nav-container">
+            <div class="nav-section">
+                <h3 class="section-title">Mathematics</h3>
+                <a href="../index.html" class="nav-link">
+                    <i data-lucide="home"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Probability</h3>
+                <a href="HeadOrTail.html" class="nav-link">
+                    <i data-lucide="coins"></i>
+                    <span class="sidebar-text">Coin Toss</span>
+                </a>
+                <a href="MultiCoin.html" class="nav-link active">
+                    <i data-lucide="layers"></i>
+                    <span class="sidebar-text">Multi-Coin Space</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Set Theory</h3>
+                <a href="../Set Theory/2ElementVenn.html" class="nav-link">
+                    <i data-lucide="circle-dot"></i>
+                    <span class="sidebar-text">2-Element Venn</span>
+                </a>
+                <a href="../Set Theory/3ElementVenn.html" class="nav-link">
+                    <i data-lucide="layout-grid"></i>
+                    <span class="sidebar-text">3-Element Venn</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="tool-container">
+            <header>
+                <h1 style="font-size: 2.25rem; margin-bottom: 0.5rem;">Multi-Coin Probability</h1>
+                <p style="color: var(--text-secondary); max-width: 600px;">Generate the entire sample space for multiple
+                    coins and calculate specific binomial probabilities.</p>
+            </header>
+
+            <div class="controls-card">
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <label for="numberOfCoins">Number of Coins (n)</label>
+                        <input type="number" id="numberOfCoins" placeholder="e.g. 3" value="3">
+                    </div>
+                    <button class="btn" onclick="generateOutcomes()">
+                        <i data-lucide="play"></i> Generate Outcomes
+                    </button>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <label for="numberOfHeads">Number of Heads (k)</label>
+                        <input type="number" id="numberOfHeads" placeholder="e.g. 1" value="1">
+                    </div>
+                    <button class="btn btn-secondary" onclick="probabilityOfNHeads()">
+                        <i data-lucide="filter"></i> Calculate Probability
+                    </button>
+                </div>
+            </div>
+
+            <div id="probabilityResult"></div>
+
+            <div class="results-section">
+                <section class="list-card">
+                    <div class="list-header">
+                        <span class="list-title"><i data-lucide="layout-grid" style="width: 18px;"></i> Full Sample
+                            Space (Ω)</span>
+                    </div>
+                    <div id="outcomesContainer" class="list-scroll"></div>
+                </section>
+
+                <section class="list-card">
+                    <div class="list-header">
+                        <span class="list-title"><i data-lucide="check-circle" style="width: 18px;"></i> Filtered
+                            Results (k heads)</span>
+                    </div>
+                    <div id="filteredContainer" class="list-scroll"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+
+            if (sidebar.classList.contains('collapsed')) {
+                icon.setAttribute('data-lucide', 'chevron-right');
+            } else {
+                icon.setAttribute('data-lucide', 'chevron-left');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        // Helper to format outcomes with colors
+        function formatOutcome(o) {
+            return o.split('').map(char =>
+                `<span class="${char === 'H' ? 'h-char' : 't-char'}">${char}</span>`
+            ).join('');
+        }
+
+        function generateOutcomes() {
+            let numberOfCoins = Number(document.getElementById("numberOfCoins").value);
+            let outcomePerCoin = ["H", "T"]
+            let outcomes = [""]
+
+            for (let i = 0; i < numberOfCoins; i++) {
+                let temp = [];
+                for (let j = 0; j < outcomes.length; j++) {
+                    temp.push(outcomes[j] + "H")
+                    temp.push(outcomes[j] + "T")
+                }
+                outcomes = temp
+            }
+
+            console.log(outcomes)
+
+            // 🔽 VISUALIZATION
+            let container = document.getElementById("outcomesContainer")
+            container.innerHTML = ""
+
+            outcomes.forEach(o => {
+                let div = document.createElement("div")
+                div.className = "outcome"
+                div.innerHTML = formatOutcome(o)
+                container.appendChild(div)
+            })
+
+            return outcomes
+        }
+
+        function probabilityOfNHeads() {
+            let outcomes = generateOutcomes();
+            let count = 0;
+            let targetHeads = Number(document.getElementById("numberOfHeads").value);
+
+            let filteredContainer = document.getElementById("filteredContainer")
+            filteredContainer.innerHTML = ""
+
+            for (let i = 0; i < outcomes.length; i++) {
+                let heads = outcomes[i].split("H").length - 1
+
+                let div = document.createElement("div")
+                div.className = "outcome"
+                div.innerHTML = formatOutcome(outcomes[i])
+
+                if (heads == targetHeads) {
+                    count++
+                    div.classList.add("highlight")
+                }
+
+                filteredContainer.appendChild(div)
+            }
+
+            let probability = count / outcomes.length
+            console.log(probability)
+
+            // 🔽 Show result
+            const resultBox = document.getElementById("probabilityResult");
+            resultBox.innerText = `Probability = ${count} / ${outcomes.length} = ${probability.toFixed(4)}`;
+            resultBox.style.display = 'block';
+
+            return probability;
+        }
+    </script>
+</body>
+
+</html>
