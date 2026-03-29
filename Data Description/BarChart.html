@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar Chart</title>
+    <link rel="stylesheet" href="../style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<style>
+    .chart-container {
+        margin-top: 3rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 500px;
+    }
+
+    .chart-area {
+        position: relative;
+        width: 100%;
+        max-width: 700px;
+        height: 400px;
+        margin: 40px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .y-axis {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--text-main);
+        z-index: 2;
+    }
+
+    .x-axis {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 2px;
+        background: var(--text-main);
+        z-index: 2;
+    }
+
+    .bars-container {
+        position: absolute;
+        left: 2px;
+        right: 0;
+        bottom: 2px;
+        top: 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-around;
+        padding: 0 10px;
+        z-index: 1;
+    }
+
+    .bar {
+        background: linear-gradient(to top, var(--primary), var(--accent));
+        width: 40px;
+        border-radius: 6px 6px 0 0;
+        transition: all 0.3s var(--transition);
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+    }
+
+    .bar:hover {
+        filter: brightness(1.1);
+        transform: scaleX(1.1);
+        z-index: 10;
+    }
+
+    .bar-tooltip {
+        position: absolute;
+        top: -35px;
+        background: var(--text-main);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+        white-space: nowrap;
+    }
+
+    .bar:hover .bar-tooltip {
+        opacity: 1;
+    }
+
+    .axis-label-row {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -35px;
+        display: flex;
+        justify-content: space-around;
+        padding: 0 10px;
+    }
+
+    .axis-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        width: 60px;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .y-axis-ticks {
+        position: absolute;
+        left: -45px;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+        display: flex;
+        flex-direction: column-reverse;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .tick {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        position: relative;
+    }
+
+    .tick::after {
+        content: '';
+        position: absolute;
+        right: -7px;
+        top: 50%;
+        width: 5px;
+        height: 1px;
+        background: var(--text-secondary);
+    }
+
+    /* Input Styling */
+    .controls-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .input-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .input-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    input {
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .btn-primary button {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+    }
+
+    .btn-primary button:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+    }
+
+    .chart-title-text {
+        position: absolute;
+        top: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 800;
+        font-size: 1.25rem;
+        color: var(--text-main);
+    }
+
+    .y-axis-title {
+        position: absolute;
+        left: -80px;
+        top: 50%;
+        transform: translateY(-50%) rotate(-90deg);
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .x-axis-title {
+        position: absolute;
+        bottom: -60px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+</style>
+
+<body>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <header class="mobile-header">
+        <a href="../index.html" class="mobile-logo">
+            <i data-lucide="bar-chart-3"></i>
+            <span>Data Visualiser</span>
+        </a>
+        <button class="hamburger" onclick="toggleMobileSidebar()">
+            <i data-lucide="menu"></i>
+        </button>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="logo">
+                <i data-lucide="bar-chart-3"></i>
+                <span class="sidebar-text">Data Visualiser</span>
+            </a>
+            <button class="toggle-btn" id="toggle-btn" onclick="toggleSidebar()">
+                <i data-lucide="chevron-left" id="toggle-icon"></i>
+            </button>
+        </div>
+
+        <div class="nav-container">
+            <div class="nav-section">
+                <h3 class="section-title">Data Description</h3>
+                <a href="../index.html" class="nav-link">
+                    <i data-lucide="home"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="section-title">Bar Chart</h3>
+                <a href="BarChart.html" class="nav-link active">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span class="sidebar-text">Bar Chart</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="hero">
+            <h1>Bar Chart Generator</h1>
+            <p class="subtitle">
+                Create beautiful, interactive bar charts manually. Enter your categories and values to see them come to
+                life.
+            </p>
+        </section>
+
+        <div class="tool-container">
+            <div class="controls-card">
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <label for="label-x">X-Axis Title</label>
+                        <input type="text" id="label-x" placeholder="e.g., Months">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="label-y">Y-Axis Title</label>
+                        <input type="text" id="label-y" placeholder="e.g., Sales ($)">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="chart-main-title">Chart Title</label>
+                        <input type="text" id="chart-main-title" placeholder="e.g., Monthly Revenue">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <label for="dataInputX">Categories (X-axis, comma separated)</label>
+                        <input type="text" id="dataInputX" placeholder="Jan, Feb, Mar, Apr, May">
+                    </div>
+                    <div class="input-wrapper">
+                        <label for="dataInputY">Values (Y-axis, comma separated)</label>
+                        <input type="text" id="dataInputY" placeholder="45, 78, 52, 91, 64">
+                    </div>
+                </div>
+
+                <div class="btn-primary">
+                    <button onclick="generateChart()">Generate Chart</button>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-area" id="chart-area">
+                    <div class="chart-title-text" id="display-title"></div>
+                    <div class="y-axis-title" id="display-y-label"></div>
+                    <div class="x-axis-title" id="display-x-label"></div>
+
+                    <div class="y-axis"></div>
+                    <div class="y-axis-ticks" id="y-axis-ticks"></div>
+
+                    <div class="bars-container" id="bars-container">
+                        <!-- Bars will be generated here -->
+                        <div class="placeholder-text" style="align-self: center; color: var(--text-secondary);">
+                            Enter data and click generate...
+                        </div>
+                    </div>
+
+                    <div class="x-axis"></div>
+                    <div class="axis-label-row" id="x-axis-labels"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+
+            if (sidebar.classList.contains('collapsed')) {
+                icon.setAttribute('data-lucide', 'chevron-right');
+            } else {
+                icon.setAttribute('data-lucide', 'chevron-left');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        function generateChart() {
+            // Get Inputs
+            const titleInput = document.getElementById('chart-main-title').value;
+            const xLabelInput = document.getElementById('label-x').value;
+            const yLabelInput = document.getElementById('label-y').value;
+            const dataX = document.getElementById('dataInputX').value.split(',').map(s => s.trim());
+            const dataY = document.getElementById('dataInputY').value.split(',').map(Number);
+
+            // Containers
+            const barsContainer = document.getElementById('bars-container');
+            const xAxisLabels = document.getElementById('x-axis-labels');
+            const yAxisTicks = document.getElementById('y-axis-ticks');
+
+            // Clear previous
+            barsContainer.innerHTML = '';
+            xAxisLabels.innerHTML = '';
+            yAxisTicks.innerHTML = '';
+
+            // Update Labels
+            document.getElementById('display-title').innerText = titleInput;
+            document.getElementById('display-x-label').innerText = xLabelInput;
+            document.getElementById('display-y-label').innerText = yLabelInput;
+
+            if (dataX.length !== dataY.length || dataX[0] === "" || isNaN(dataY[0])) {
+                barsContainer.innerHTML = '<div style="align-self: center; color: #ef4444;">Please enter valid matching data!</div>';
+                return;
+            }
+
+            // Find max for scaling
+            const maxVal = Math.max(...dataY) * 1.1; // Add 10% headroom
+
+            // Generate Y-axis Ticks
+            for (let i = 0; i <= 5; i++) {
+                const tickVal = Math.round((maxVal / 5) * i);
+                const tick = document.createElement('div');
+                tick.className = 'tick';
+                tick.innerText = tickVal;
+                yAxisTicks.appendChild(tick);
+            }
+
+            // Generate Bars and X-labels
+            dataY.forEach((val, index) => {
+                // Create Bar
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                const heightPercentage = (val / maxVal) * 100;
+                bar.style.height = heightPercentage + '%';
+
+                // Set bar width based on number of items
+                const barWidth = Math.min(60, 400 / dataY.length - 20);
+                bar.style.width = barWidth + 'px';
+
+                // Create Tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'bar-tooltip';
+                tooltip.innerText = val;
+                bar.appendChild(tooltip);
+
+                barsContainer.appendChild(bar);
+
+                // Create X-axis label
+                const label = document.createElement('div');
+                label.className = 'axis-label';
+                label.innerText = dataX[index];
+                label.style.width = barWidth + 'px';
+                xAxisLabels.appendChild(label);
+            });
+        }
+    </script>
+</body>
+
+</html>
